@@ -36,5 +36,5 @@ if __name__ == "__main__":
     #joined = business.join(review, business('business_id') == review('business_id'))
     #joined = joined.select('business_id', 'address', 'category', 'stars')
     # joined.show()
-    joined= sqlContext.sql('select reviewt.business_id, first(address), first(category),avg(stars) from businesst,reviewt where businesst.business_id==reviewt.business_id group by reviewt.business_id sort by avg(stars) desc').limit(10)
+    joined= sqlContext.sql('select reviewt.business_id, first(address), first(category),avg(stars) from businesst,reviewt where businesst.business_id==reviewt.business_id group by reviewt.business_id order by avg(stars) desc').limit(10)
     joined.write.format('com.databricks.spark.csv').save('question4/top-10.csv')
