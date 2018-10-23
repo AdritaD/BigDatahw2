@@ -22,12 +22,12 @@ if __name__ == "__main__":
 
     #business with their avg ratings
     join1=business.join(result1).map(lambda x: (x[1][1],(x[0],x[1][0][0],x[1][0][1])))
-    sortedResults = join1.sortByKey(ascending=False)
+    sortedResults = join1.sortByKey(ascending=False).distinct()
 
     #top_10= sortedResults.take(10)
 
     #sortedResults.coalesce(1).saveAsTextFile("question4/join2")
-    top_10 = sortedResults.top(20, key=lambda x: x[0])
+    top_10 = sortedResults.top(10, key=lambda x: x[0])
     top_10=sc.parallelize(top_10)
     top_10 = top_10.map(lambda x: "{0}\t{1}\t{2}\t{3}".format(x[1][0], x[1][1], x[1][2], x[0]))
     top_10.coalesce(1).saveAsTextFile("question4/top_10")
