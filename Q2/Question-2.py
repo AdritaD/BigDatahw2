@@ -1,7 +1,7 @@
 from pyspark.sql import SparkSession
 from pyspark.sql import SQLContext
 from pyspark import SparkContext, SparkConf
-from pyspark.sql.functions import split, explode, col, array
+import pyspark.sql.functions as f
 
 def find_mutual(row):
     friend1 = row[0].strip()
@@ -53,23 +53,27 @@ if __name__ == "__main__":
     #friends_join_userdata_format.coalesce(1).saveAsTextFile("question2/outputx")
     final_join = friends_join_userdata_format.join(user_Data_format)
     Resultrdd = final_join.map(lambda x:"{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}".format(str(x[1][0][0][1]),x[1][0][1][0],x[1][0][1][1],x[1][0][1][2],x[1][1][0],x[1][1][1],x[1][1][2]))
-    Resultrdd.coalesce(1).saveAsTextFile("question2/output1")
+    #Resultrdd.coalesce(1).saveAsTextFile("question2/output1")
 
 
     #sql
     pairs_df=top_ten_pairs.toDF()
+
+    pairs_df=pairs_df.select(pairs_df._1.alias('user1'), pairs_df._2._1.alias('user2'),pairs_df._2._2.alias('count'))
     #pairs_df.show(1)
-    pairs_df = pairs_df.select(pairs_df._1.alias('user_id'), pairs_df._2.alias('data'))
+
+
     userdata_df=user_Data_format.toDF()
     #userdata_df.show(1)
     userdata_df = userdata_df.select(userdata_df._1.alias('user_id'), userdata_df._2.alias('data'))
     pairs_df.registerTempTable("pairs_df")
     userdata_df.registerTempTable("userdata_df")
-    join1= sqlContext.sql('select pairs_df.user_id as id, pairs_df.data as id2, userdata_df.data as data from pairs_df,userdata_df where pairs_df.user_id==userdata_df.user_id ')
 
-    join1.show()
+    join1= sqlContext.sql('select pairs_df.user1 as id1,pairs_df.user2 as id2, pairs_df.count as count, userdata_df.data as data from pairs_df,userdata_df where pairs_df.user1==userdata_df.user_id ')
+
+    #join1.show()
     join1.registerTempTable("join1")
-    joined=sqlContext.sql('select join1.data as data1, userdata_df.data from join1,userdata_df where join1.id==userdata_df.user_id ')
+    joined=sqlContext.sql('select join1.count, join1.data as data1, userdata_df.data as data2 from join1,userdata_df where join1.id2==userdata_df.user_id ')
     #joined.write.format('com.databricks.spark.csv').save('question2/joined.csv')
     joined.show()
     
